@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Embed in Image | StegoShield</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-advanced { background: radial-gradient(circle at 10% 20%, rgb(17, 24, 39) 0%, rgb(30, 41, 59) 100%); }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-back:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+    transform: translateX(-4px);
+    box-shadow: -10px 0 20px -10px rgba(59, 130, 246, 0.3);
+}
+
+.btn-back svg {
+    transition: transform 0.3s ease;
+}
+
+.btn-back:hover svg {
+    transform: translateX(-3px);
+}
+    </style>
+</head>
+<body class="bg-advanced min-h-screen text-white p-6">
+    <div class="max-w-6xl mx-auto">
+    	<button onclick="window.location.href='index.html'" class="btn-back mb-8 group">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    <span>Back to Workspace</span>
+</button>
+        <h1 class="text-4xl font-bold text-center mb-8 text-blue-400">Embed Secret in Image</h1>
+
+        <div class="flex flex-col md:flex-row gap-6 mb-8">
+            
+            <div class="flex-1 glass-panel p-6 rounded-3xl flex flex-col">
+                <h2 class="text-xl font-bold mb-4 text-blue-400">1. Cover Image</h2>
+                <div class="w-full h-64 bg-gray-900/50 rounded-2xl flex items-center justify-center border-2 border-dashed border-blue-500/30 overflow-hidden mb-4">
+                    <img id="coverPreview" class="hidden h-full w-full object-contain">
+                    <p id="coverPlaceholder" class="text-gray-500 px-4 text-center">Upload the container image</p>
+                </div>
+                <input type="file" id="coverInput" accept="image/*" class="hidden" onchange="previewFile('cover')">
+                <button onclick="document.getElementById('coverInput').click()" class="mt-auto w-full py-3 bg-blue-600/20 border border-blue-500/50 rounded-xl font-bold hover:bg-blue-600 transition">Select Cover</button>
+            </div>
+
+            <div class="flex-1 glass-panel p-6 rounded-3xl flex flex-col">
+                <h2 class="text-xl font-bold mb-4 text-teal-400">2. Secret File</h2>
+                <div class="w-full h-64 bg-gray-900/50 rounded-2xl flex items-center justify-center border-2 border-dashed border-teal-500/30 overflow-hidden mb-4 text-center">
+                    <div id="secretPlaceholder">
+                        <p class="text-gray-500 px-4">Upload the file to hide</p>
+                        <p id="secretName" class="text-teal-400 text-sm mt-2 font-mono"></p>
+                    </div>
+                </div>
+                <input type="file" id="secretInput" class="hidden" onchange="previewFile('secret')">
+                <button onclick="document.getElementById('secretInput').click()" class="mt-auto w-full py-3 bg-teal-600/20 border border-teal-500/50 rounded-xl font-bold hover:bg-teal-700 transition">Select Secret</button>
+            </div>
+
+        </div>
+
+        <div class="max-w-2xl mx-auto glass-panel p-8 rounded-3xl">
+            <div class="mb-6">
+                <label class="block text-blue-300 text-sm font-bold mb-2">3. Set Security Password</label>
+                <input type="password" id="stegoPass" 
+                       class="w-full bg-gray-800 border border-white/10 p-4 rounded-xl text-white focus:outline-none focus:border-blue-500 shadow-inner" 
+                       placeholder="Enter password to lock data">
+            </div>
+            
+            <button id="embedBtn" onclick="processEmbedding()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-teal-500 rounded-xl font-extrabold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all">
+                PROCEED AND EMBED
+            </button>
+            <p id="status" class="mt-4 text-center text-sm font-medium"></p>
+        </div>
+    </div>
+
+    <script>
+        function previewFile(type) {
+            const input = document.getElementById(`${type}Input`);
+            const placeholder = document.getElementById(`${type}Placeholder`);
+            if (type === 'cover') {
+                const preview = document.getElementById('coverPreview');
+                if (input.files[0]) {
+                    preview.src = URL.createObjectURL(input.files[0]);
+                    preview.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                }
+            } else {
+                const nameDisplay = document.getElementById('secretName');
+                if (input.files[0]) nameDisplay.innerText = input.files[0].name;
+            }
+        }
+
+        async function encryptData(rawData, password) {
+            const encoder = new TextEncoder();
+            const salt = window.crypto.getRandomValues(new Uint8Array(16));
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+            const passwordKey = await window.crypto.subtle.importKey(
+                "raw", encoder.encode(password), "PBKDF2", false, ["deriveKey"]
+            );
+
+            const aesKey = await window.crypto.subtle.deriveKey(
+                { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+                passwordKey,
+                { name: "AES-GCM", length: 256 },
+                false, ["encrypt"]
+            );
+
+            const encryptedContent = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, aesKey, rawData);
+            
+            const combined = new Uint8Array(16 + 12 + encryptedContent.byteLength);
+            combined.set(salt, 0);
+            combined.set(iv, 16);
+            combined.set(new Uint8Array(encryptedContent), 28);
+            return combined;
+        }
+
+        async function processEmbedding() {
+    const coverInput = document.getElementById('coverInput');
+    const secretInput = document.getElementById('secretInput');
+    const password = document.getElementById('stegoPass').value;
+    const status = document.getElementById('status');
+
+    if (!coverInput.files[0] || !secretInput.files[0] || !password) {
+        alert("Please select both files and enter a password!");
+        return;
+    }
+
+    status.innerHTML = "🔒 <span class='animate-pulse'>Encrypting & Embedding...</span>";
+    const btn = document.getElementById('embedBtn');
+    btn.disabled = true;
+
+    try {
+        // 1. Encrypt the secret file data
+        const secretBuffer = await secretInput.files[0].arrayBuffer();
+        const encryptedData = await encryptData(new Uint8Array(secretBuffer), password);
+
+        // 2. Prepare the Binary Header
+        // Structure: [NameLen (1b)] + [FileName] + [DataLen (4b)] + [EncryptedData]
+        const fileName = secretInput.files[0].name;
+        const nameBytes = new TextEncoder().encode(fileName);
+        
+        let dataToHide = new Uint8Array(1 + nameBytes.length + 4 + encryptedData.length);
+        let view = new DataView(dataToHide.buffer);
+
+        view.setUint8(0, nameBytes.length); // Offset 0: Filename length
+        dataToHide.set(nameBytes, 1);       // Offset 1: Filename bytes
+        view.setUint32(1 + nameBytes.length, encryptedData.length); // Next 4 bytes: Encrypted data length
+        dataToHide.set(encryptedData, 1 + nameBytes.length + 4);     // Remaining: The actual payload
+
+        // 3. Load the Cover Image
+        const img = new Image();
+        img.src = URL.createObjectURL(coverInput.files[0]);
+        await new Promise(r => img.onload = r);
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imgData.data;
+
+        // 4. Capacity Verification
+        const availableBits = (pixels.length / 4) * 3; // RGB channels only
+        const requiredBits = dataToHide.length * 8;
+
+        if (requiredBits > availableBits) {
+            throw new Error(`File too large! Required: ${(requiredBits/8/1024).toFixed(2)}KB, Available: ${(availableBits/8/1024).toFixed(2)}KB`);
+        }
+
+        // 5. LSB Embedding Loop
+        let bitIdx = 0;
+        const totalBits = requiredBits;
+        for (let i = 0; i < pixels.length && bitIdx < totalBits; i++) {
+            if ((i + 1) % 4 === 0) continue; // Skip Alpha channel
+            
+            const byteIdx = Math.floor(bitIdx / 8);
+            const bitValue = (dataToHide[byteIdx] >> (7 - (bitIdx % 8))) & 1;
+            
+            pixels[i] = (pixels[i] & 0xFE) | bitValue; // Modify the Least Significant Bit
+            bitIdx++;
+        }
+
+        // 6. Output the Stego Image
+        ctx.putImageData(imgData, 0, 0);
+        const link = document.createElement('a');
+        const baseName = coverInput.files[0].name.split('.')[0];
+        link.download = `${baseName}_stego.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+        status.innerHTML = "<span class='text-teal-400 font-bold'>✅ Success! Downloaded: " + link.download + "</span>";
+    } catch (err) {
+        status.innerHTML = `<span class='text-red-400'>❌ Error: ${err.message}</span>`;
+    } finally {
+        btn.disabled = false;
+    }
+}
+    </script>
+</body>
+</html>
