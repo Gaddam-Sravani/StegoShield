@@ -6,90 +6,20 @@
     <title>StegoShield | WorkSpace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Poppins', sans-serif; }
-        
-        /* Advanced Background Gradient */
-        .bg-advanced {
-            background: radial-gradient(circle at 10% 20%, rgb(17, 24, 39) 0%, rgb(30, 41, 59) 100%);
-        }
-        .btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    color: #94a3b8;
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-back:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: rgba(59, 130, 246, 0.4);
-    color: #60a5fa;
-    transform: translateX(-4px);
-    box-shadow: -10px 0 20px -10px rgba(59, 130, 246, 0.3);
-}
-
-.btn-back svg {
-    transition: transform 0.3s ease;
-}
-
-.btn-back:hover svg {
-    transform: translateX(-3px);
-}
-
-        /* Glassmorphism Styling */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        /* Gradient Button Border/Text (Initial State) */
-        .btn-gradient-outline {
-            background-image: linear-gradient(rgba(17, 24, 39, 0), rgba(17, 24, 39, 0)), linear-gradient(90deg, #60a5fa, #4ade80);
-            background-origin: border-box;
-            background-clip: content-box, border-box;
-            border: 2px solid transparent;
-            color: #ffffff;
-            transition: all 0.3s ease;
-        }
-        
-        /* Gradient Button (Hover/Active State) */
-        .btn-gradient-fill {
-            background: linear-gradient(90deg, #60a5fa, #4ade80);
-            color: #ffffff;
-            border: 2px solid transparent;
-            box-shadow: 0 0 15px rgba(96, 165, 250, 0.5);
-        }
-
-        /* Tab Hover/Active State */
-        .active-tab {
-            border-bottom: 2px solid #60a5fa;
-            color: #ffffff;
-            font-weight: 600;
-        }
-    </style>
+    <link href="../css/global.css" rel="stylesheet">
 </head>
 <body class="bg-advanced min-h-screen text-gray-200 antialiased p-8">
 	<div class="fixed top-6 left-6 z-50">
-    <button onclick="window.location.href='home.html'" class="btn-back group">
+    	<button onclick="window.location.href='home.html'" class="btn-back group">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
         <span>Back to Home</span>
-    </button>
-</div>
+    	</button>
+	</div>
 
-    <main class="max-w-7xl mx-auto flex flex-col items-center">
+    	<main class="max-w-7xl mx-auto flex flex-col items-center">
         
         <header class="w-full flex justify-center gap-4 mb-8 mt-12">
         
@@ -101,7 +31,7 @@
                 EXTRACT DATA
             </button>
         </header>
-	<div id="statusMessage" class="mt-6 text-center text-xl font-bold bg-gradient-to-r from-red-300 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(52,211,153,0.3)]">
+	<div id="statusMessage" class="status-gold">
     Select a mode above (Embed or Extract) to begin using the workspace.
 </div>
         <br><br>
@@ -151,7 +81,7 @@
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </div>
                     <h2 class="text-3xl font-extrabold text-white tracking-tight">Document( .pdf, .docx, .html, etc)</h2>
-                    <p class="text-gray-400 text-lg max-w-sm">Append to PDFs, manipulate Office docs, or hide data in binary headers (.zip, .exe).</p>
+                    <p class="text-gray-400 text-lg max-w-sm">Append to PDFs, manipulate Office docs, or hide data in binary headers (.docx,.pdf).</p>
                 </div>
             </div>
 
@@ -160,73 +90,6 @@
         
 
     </main>
-<script>
-let currentMode = null;
-
-function setMode(mode) {
-    currentMode = mode;
-    
-    const embedBtn = document.getElementById('headerEmbed');
-    const extractBtn = document.getElementById('headerExtract');
-    const tabSection = document.getElementById('tabSection');
-    const statusMsg = document.getElementById('statusMessage');
-
-    // Toggle button styles
-    if (mode === 'embed') {
-        embedBtn.classList.add('btn-gradient-fill');
-        extractBtn.classList.remove('btn-gradient-fill');
-        statusMsg.innerText = "Mode: EMBED - Choose a file type to hide your data.";
-    } else {
-        extractBtn.classList.add('btn-gradient-fill');
-        embedBtn.classList.remove('btn-gradient-fill');
-        statusMsg.innerText = "Mode: EXTRACT - Choose the file type you want to decode.";
-    }
-
-    // UNLOCK the cards
-    tabSection.classList.remove('opacity-40', 'pointer-events-none');
-    tabSection.classList.add('scale-100');
-}
-
-function handleTabClick(type) {
-    // Only allow clicking if a mode has been selected first
-    if (!currentMode) {
-        alert("Please select EMBED or EXTRACT mode first!");
-        return;
-    }
-
-    if (type === 'image') {
-        if (currentMode === 'extract') {
-            window.location.href = 'extractimage.html';
-        } else {
-            window.location.href = 'image.html';
-        }
-    }
-    else if (type === 'video') {
-        if (currentMode === 'extract') {
-            // Redirect to your video extraction page
-            window.location.href = 'extractvideo.html'; 
-        } else {
-            // Redirect to your video embedding page
-            window.location.href = 'video.html';
-        }
-    }
-    else if (type === 'audio') {
-        if (currentMode === 'extract') {
-            // Redirect to your video extraction page
-            window.location.href = 'extractaudio.html'; 
-        } else {
-            // Redirect to your video embedding page
-            window.location.href = 'audio.html';
-        }
-    }
-    else if (type === 'document') {
-        window.location.href = (currentMode === 'extract') ? 'extractdocument.html' : 'document.html';
-    }
-}
-
-// Initializing the buttons
-document.getElementById('headerEmbed').onclick = () => setMode('embed');
-document.getElementById('headerExtract').onclick = () => setMode('extract');
-</script>
+<script src="../js/indexLogic.js"></script>
 </body>
 </html>
